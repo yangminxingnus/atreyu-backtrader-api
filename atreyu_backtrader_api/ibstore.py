@@ -208,7 +208,6 @@ class HistBar(object):
         self.low = bar.low
         self.close = bar.close
         self.volume = bar.volume
-        self.wap = bar.wap
         self.count = bar.barCount
 
     def __str__(self):
@@ -567,7 +566,7 @@ class IBStore(with_metaclass(MetaSingleton, object)):
         actually running. And although this will usually be the localhost, it
         must not be
 
-      - ``port`` (default: ``7496``): port to connect to. The demo system uses
+      - ``port`` (default: ``7496``): port to connect to. The demo.py system uses
         ``7497``
 
       - ``clientId`` (default: ``None``): which clientId to use to connect to
@@ -657,6 +656,7 @@ class IBStore(with_metaclass(MetaSingleton, object)):
     def __init__(self):
         super(IBStore, self).__init__()
 
+        self._done = True
         self._lock_q = threading.Lock()  # sync access to _tickerId/Queues
         self._lock_accupd = threading.Lock()  # sync account updates
         self._lock_pos = threading.Lock()  # sync account updates
@@ -1114,6 +1114,7 @@ class IBStore(with_metaclass(MetaSingleton, object)):
     
     def getContractDetails(self, contract, maxcount=None):
         cds = list()
+        time.sleep(2)
         q = self.reqContractDetails(contract)
         while True:
             msg = q.get()
@@ -1155,6 +1156,9 @@ class IBStore(with_metaclass(MetaSingleton, object)):
         It uses the IB published valid duration/barsizes to make a mapping and
         spread a historical request over several historical requests if needed
         '''
+        if not self._done:
+            return
+        self._done = False
         # Keep a copy for error reporting purposes
         kwargs = locals().copy()
         kwargs.pop('self', None)  # remove self, no need to report it
@@ -1243,7 +1247,6 @@ class IBStore(with_metaclass(MetaSingleton, object)):
             2, # dateformat 1 for string, 2 for unix time in seconds
             False,
             [])
-
         return q
     
     def reqHistoricalData(self, contract, enddate, duration, barsize,

@@ -498,9 +498,9 @@ class IBData(with_metaclass(MetaIBData, DataBase)):
         return bool(self._storedmsg or self.qlive)
 
     def _load(self):
+        fetched = False
         if self.contract is None or self._state == self._ST_OVER:
             return False  # nothing can be done
-
         while True:
             if self._state == self._ST_LIVE:
                 try:
@@ -654,14 +654,17 @@ class IBData(with_metaclass(MetaIBData, DataBase)):
             elif self._state == self._ST_HISTORBACK:
                 try:
                     msg = self.qhist.get(timeout=self.p.qcheck)
+                    fetched = True
                 except queue.Empty:
-                    if True:
+                    if fetched or self.all_date_loaded:
                         if self.p.historical:  # only historical
                             self.put_notification(self.DISCONNECTED)
                             return False  # end of historical
 
                         # Live is also wished - go for it
                         self._state = self._ST_LIVE
+                        continue
+                    else:
                         continue
 
                 if msg is None:  # Conn broken during historical/backfilling
@@ -687,6 +690,9 @@ class IBData(with_metaclass(MetaIBData, DataBase)):
                     continue
 
                 if msg.date is not None:
+                    if msg.date.date() == self.date_end.date():
+                        print("all date fetched")
+                        self.all_date_loaded = True
                     if self._timeframe == bt.TimeFrame.Ticks:
                         if self._load_rtticks(msg, hist=True):
                             return True
@@ -731,6 +737,8 @@ class IBData(with_metaclass(MetaIBData, DataBase)):
             dtend = None
             if self.todate < float('inf'):
                 dtend = num2date(self.todate)
+                self.date_end = dtend - datetime.timedelta(days=1)
+                self.all_date_loaded = False
 
             dtbegin = None
             if self.fromdate > float('-inf'):
