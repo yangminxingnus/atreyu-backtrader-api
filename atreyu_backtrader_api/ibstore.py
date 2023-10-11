@@ -566,7 +566,7 @@ class IBStore(with_metaclass(MetaSingleton, object)):
         actually running. And although this will usually be the localhost, it
         must not be
 
-      - ``port`` (default: ``7496``): port to connect to. The demo.py system uses
+      - ``port`` (default: ``7496``): port to connect to. The main.py system uses
         ``7497``
 
       - ``clientId`` (default: ``None``): which clientId to use to connect to

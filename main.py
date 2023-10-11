@@ -1,9 +1,6 @@
 import backtrader as bt
-import datetime as dt
-import logging
 from atreyu_backtrader_api import IBData
-from TestPrinter import TestPrinter
-import sys
+from strategies.TestPrinter import TestPrinter
 
 import logging
 
