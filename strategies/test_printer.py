@@ -2,6 +2,7 @@ import sys
 
 import backtrader as bt
 
+
 class TestPrinter(bt.Strategy):
 
     def log(self, txt, dt=None):
@@ -24,4 +25,4 @@ class TestPrinter(bt.Strategy):
                    Low:{self.low[0]:.2f}, \
                    Close:{self.close[0]:.2f}, \
                    Volume:{self.volume[0]:.2f}, \
-                   OpenInterest:{self.volume[0]:.2f}' )
+                   OpenInterest:{self.volume[0]:.2f}')

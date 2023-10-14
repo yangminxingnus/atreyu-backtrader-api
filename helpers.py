@@ -1,0 +1,1 @@
+def printTradeAnalysis(data, strategy):

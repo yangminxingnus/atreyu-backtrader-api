@@ -690,8 +690,9 @@ class IBData(with_metaclass(MetaIBData, DataBase)):
                     continue
 
                 if msg.date is not None:
+                    print(msg.date)
                     if msg.date.date() == self.date_end.date():
-                        print("all date fetched")
+                        print("All Date Fetched")
                         self.all_date_loaded = True
                     if self._timeframe == bt.TimeFrame.Ticks:
                         if self._load_rtticks(msg, hist=True):
