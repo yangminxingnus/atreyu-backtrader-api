@@ -1213,6 +1213,10 @@ class IBStore(with_metaclass(MetaSingleton, object)):
 
         if duration is None:  # no duration large enough to fit the request
             duration = durations[-1]
+            new_duration = duration
+            while self.dt_plus_duration(intdate, new_duration) < enddate:
+                new_duration = self.duration_plus_duration(new_duration, duration)
+            duration = new_duration
 
             # Store the calculated data
             self.histexreq[tickerId] = dict(
@@ -1234,12 +1238,12 @@ class IBStore(with_metaclass(MetaSingleton, object)):
             self.iscash[tickerId] = 4  # msg.field code
 
         what = what or 'TRADES'
-
+        initTime = intdate.strftime('%Y%m%d-%H:%M:%S')
         self.conn.reqHistoricalData(
             tickerId,
             contract,
             #bytes(intdate.strftime('%Y%m%d %H:%M:%S') + ' GMT'),
-            bytes(intdate.strftime('%Y%m%d-%H:%M:%S')),
+            bytes(enddate.strftime('%Y%m%d-%H:%M:%S')),
             bytes(duration),
             bytes(barsize),
             bytes(what),
@@ -1884,6 +1888,16 @@ class IBStore(with_metaclass(MetaSingleton, object)):
             return dt.replace(year=dt.year + size)
 
         return dt  # could do nothing with it ... return it intact
+
+    def duration_plus_duration(self, duration1, duration2):
+        size1, dim1 = duration1.split()
+        size2, dim2 = duration2.split()
+        if dim1 != dim2:
+            raise ValueError("Date provided can't be in the past")
+
+        size1 = int(size1) + int(size2)
+
+        return str(size1) + " " + dim1
 
     def calcdurations(self, dtbegin, dtend):
         '''Calculate a duration in between 2 datetimes'''

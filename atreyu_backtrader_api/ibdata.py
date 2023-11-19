@@ -30,6 +30,8 @@ from backtrader import TimeFrame, date2num, num2date
 from backtrader.utils.py3 import (integer_types, queue, string_types,
                                   with_metaclass)
 from backtrader.metabase import MetaParams
+from ibapi.common import ListOfContractDescription
+
 from atreyu_backtrader_api import ibstore
 
 import logging
@@ -499,6 +501,7 @@ class IBData(with_metaclass(MetaIBData, DataBase)):
 
     def _load(self):
         fetched = False
+        ten_times = 0
         if self.contract is None or self._state == self._ST_OVER:
             return False  # nothing can be done
         while True:
@@ -656,7 +659,8 @@ class IBData(with_metaclass(MetaIBData, DataBase)):
                     msg = self.qhist.get(timeout=self.p.qcheck)
                     fetched = True
                 except queue.Empty:
-                    if fetched or self.all_date_loaded:
+                    ten_times += 1
+                    if fetched or self.all_date_loaded or ten_times == 10:
                         if self.p.historical:  # only historical
                             self.put_notification(self.DISCONNECTED)
                             return False  # end of historical
@@ -738,7 +742,8 @@ class IBData(with_metaclass(MetaIBData, DataBase)):
             dtend = None
             if self.todate < float('inf'):
                 dtend = num2date(self.todate)
-                self.date_end = dtend - datetime.timedelta(days=1)
+                self.date_end = dtend
+                # self.date_end = dtend - datetime.timedelta(days=1)
                 self.all_date_loaded = False
 
             dtbegin = None
